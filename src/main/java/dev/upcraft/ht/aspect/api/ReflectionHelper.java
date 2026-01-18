@@ -14,6 +14,7 @@ public class ReflectionHelper {
         return staticGetter(ownerClass, fieldName, fieldType, MethodHandles.lookup());
     }
 
+    @SuppressWarnings("unchecked")
     public static <T> Supplier<T> staticGetter(Class<?> clazz, String fieldName, Class<T> fieldType, MethodHandles.Lookup callerContext) {
         try {
             MethodHandle getter = MethodHandles.privateLookupIn(clazz, callerContext).findStaticGetter(clazz, fieldName, fieldType)
@@ -21,7 +22,7 @@ public class ReflectionHelper {
             var cachedErrorMessage = "Reflection error: Unable to get static field %s#%s".formatted(clazz.getName(), fieldName);
             return () -> {
                 try {
-                    return fieldType.cast(getter.invokeExact());
+                    return (T) getter.invokeExact();
                 } catch (Throwable e) {
                     throw new RuntimeException(cachedErrorMessage, e);
                 }
@@ -35,6 +36,7 @@ public class ReflectionHelper {
         return getter(ownerClass, fieldName, fieldType, MethodHandles.lookup());
     }
 
+    @SuppressWarnings("unchecked")
     public static <P, T> Function<P, T> getter(Class<P> clazz, String fieldName, Class<T> fieldType, MethodHandles.Lookup callerContext) {
         try {
             MethodHandle getter = MethodHandles.privateLookupIn(clazz, callerContext).findGetter(clazz, fieldName, fieldType)
@@ -43,7 +45,7 @@ public class ReflectionHelper {
             var cachedErrorMessage = "Reflection error: Unable to get field %s#%s".formatted(clazz.getName(), fieldName);
             return parent -> {
                 try {
-                    return fieldType.cast(getter.invokeExact(clazz.cast(parent)));
+                    return (T) getter.invokeExact(parent);
                 } catch (Throwable e) {
                     throw new RuntimeException(cachedErrorMessage, e);
                 }
@@ -64,7 +66,7 @@ public class ReflectionHelper {
             var cachedErrorMessage = "Reflection error: Unable to set static field %s#%s".formatted(clazz.getName(), fieldName);
             return value -> {
                 try {
-                    setter.invokeExact(fieldType.cast(value));
+                    setter.invokeExact(value);
                 } catch (Throwable e) {
                     throw new RuntimeException(cachedErrorMessage, e);
                 }
@@ -85,7 +87,7 @@ public class ReflectionHelper {
             var cachedErrorMessage = "Reflection error: Unable to set field %s#%s".formatted(clazz.getName(), fieldName);
             return (parent, value) -> {
                 try {
-                    setter.invokeExact(clazz.cast(parent), fieldType.cast(value));
+                    setter.invokeExact(parent, value);
                 } catch (Throwable e) {
                     throw new RuntimeException(cachedErrorMessage, e);
                 }
