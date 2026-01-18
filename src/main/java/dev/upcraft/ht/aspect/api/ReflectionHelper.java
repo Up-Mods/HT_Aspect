@@ -2,6 +2,7 @@ package dev.upcraft.ht.aspect.api;
 
 import java.lang.invoke.MethodHandle;
 import java.lang.invoke.MethodHandles;
+import java.lang.invoke.MethodType;
 import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 import java.util.function.Function;
@@ -15,11 +16,12 @@ public class ReflectionHelper {
 
     public static <T> Supplier<T> staticGetter(Class<?> clazz, String fieldName, Class<T> fieldType, MethodHandles.Lookup callerContext) {
         try {
-            MethodHandle getter = MethodHandles.privateLookupIn(clazz, callerContext).findStaticGetter(clazz, fieldName, fieldType);
+            MethodHandle getter = MethodHandles.privateLookupIn(clazz, callerContext).findStaticGetter(clazz, fieldName, fieldType)
+                    .asType(MethodType.methodType(Object.class));
             var cachedErrorMessage = "Reflection error: Unable to get static field %s#%s".formatted(clazz.getName(), fieldName);
             return () -> {
                 try {
-                    return fieldType.cast(getter.invoke());
+                    return fieldType.cast(getter.invokeExact());
                 } catch (Throwable e) {
                     throw new RuntimeException(cachedErrorMessage, e);
                 }
@@ -35,11 +37,13 @@ public class ReflectionHelper {
 
     public static <P, T> Function<P, T> getter(Class<P> clazz, String fieldName, Class<T> fieldType, MethodHandles.Lookup callerContext) {
         try {
-            MethodHandle getter = MethodHandles.privateLookupIn(clazz, callerContext).findGetter(clazz, fieldName, fieldType);
+            MethodHandle getter = MethodHandles.privateLookupIn(clazz, callerContext).findGetter(clazz, fieldName, fieldType)
+                    .asType(MethodType.methodType(Object.class, Object.class));
+
             var cachedErrorMessage = "Reflection error: Unable to get field %s#%s".formatted(clazz.getName(), fieldName);
             return parent -> {
                 try {
-                    return fieldType.cast(getter.invoke(clazz.cast(parent)));
+                    return fieldType.cast(getter.invokeExact(clazz.cast(parent)));
                 } catch (Throwable e) {
                     throw new RuntimeException(cachedErrorMessage, e);
                 }
@@ -55,11 +59,12 @@ public class ReflectionHelper {
 
     public static <T> Consumer<T> staticSetter(Class<?> clazz, String fieldName, Class<T> fieldType, MethodHandles.Lookup callerContext) {
         try {
-            MethodHandle setter = MethodHandles.privateLookupIn(clazz, callerContext).findStaticSetter(clazz, fieldName, fieldType);
+            MethodHandle setter = MethodHandles.privateLookupIn(clazz, callerContext).findStaticSetter(clazz, fieldName, fieldType)
+                    .asType(MethodType.methodType(void.class, Object.class));
             var cachedErrorMessage = "Reflection error: Unable to set static field %s#%s".formatted(clazz.getName(), fieldName);
             return value -> {
                 try {
-                    setter.invoke(fieldType.cast(value));
+                    setter.invokeExact(fieldType.cast(value));
                 } catch (Throwable e) {
                     throw new RuntimeException(cachedErrorMessage, e);
                 }
@@ -75,11 +80,12 @@ public class ReflectionHelper {
 
     public static <P, T> BiConsumer<P, T> setter(Class<P> clazz, String fieldName, Class<T> fieldType, MethodHandles.Lookup callerContext) {
         try {
-            MethodHandle setter = MethodHandles.privateLookupIn(clazz, callerContext).findSetter(clazz, fieldName, fieldType);
+            MethodHandle setter = MethodHandles.privateLookupIn(clazz, callerContext).findSetter(clazz, fieldName, fieldType)
+                    .asType(MethodType.methodType(void.class, Object.class, Object.class));
             var cachedErrorMessage = "Reflection error: Unable to set field %s#%s".formatted(clazz.getName(), fieldName);
             return (parent, value) -> {
                 try {
-                    setter.invoke(clazz.cast(parent), fieldType.cast(value));
+                    setter.invokeExact(clazz.cast(parent), fieldType.cast(value));
                 } catch (Throwable e) {
                     throw new RuntimeException(cachedErrorMessage, e);
                 }
