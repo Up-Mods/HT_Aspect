@@ -1,5 +1,5 @@
 [versions]
-hytale-mod-plugin = "1.0-SNAPSHOT"
+hytale-mod-plugin = "0.+"
 shadow = "9.3.0"
 
 jetbrains-annotations = "26.0.2-1"
