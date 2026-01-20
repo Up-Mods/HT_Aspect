@@ -3,7 +3,7 @@ pluginManagement {
         mavenLocal()
         gradlePluginPortal()
         mavenCentral()
-        maven("https://maven.hytale-modding.info/releases") {
+        maven("https://maven.hytale-mods.dev/releases") {
             name = "HytaleModdingReleases"
         }
     }
