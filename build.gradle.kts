@@ -14,7 +14,7 @@ val buildNumber: Int = providers.environmentVariable("BUILD_NUMBER").map { it.to
 val runningOnCI = providers.environmentVariable("CI").orNull.toBoolean()
 
 group = "dev.upcraft.ht"
-version = SimpleDateFormat("YY.MM.dd").format(buildTime)
+version = SimpleDateFormat("YY.M.d").format(buildTime)
 
 hytale {
 
@@ -93,16 +93,18 @@ tasks.assemble.configure {
 
 publishing {
     repositories {
-        // This is where you put repositories that you want to publish to.
-        // Do NOT put repositories for your dependencies here.
+        maven("https://maven.hytale-mods.dev/releases") {
+            credentials {
+                username = providers.environmentVariable("HM_RELEASES_MAVEN_USER").orNull
+                password = providers.environmentVariable("HM_RELEASES_MAVEN_TOKEN").orNull
+            }
+        }
     }
 
     publications {
         create<MavenPublication>("maven") {
             from(components["java"])
-        }
-        create<MavenPublication>("shadow") {
-            from(components["shadow"])
+            suppressPomMetadataWarningsFor("runtimeElements")
         }
     }
 }
