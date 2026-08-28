@@ -7,7 +7,7 @@ jspecify = "1.0.0"
 
 guava = "33.5.0-jre"
 
-bettermodlist = "1.+"
+bettermodlist = "1.+" # https://mods.cf/1415079
 
 [libraries]
 jetbrains-annotations = { module = "org.jetbrains:annotations", version.ref = "jetbrains-annotations" }
